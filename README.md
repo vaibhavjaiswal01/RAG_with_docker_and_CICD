@@ -1,4 +1,4 @@
-## end to end project       
+## End to end project       
 RAG-based Chatbot with Flask, LangChain, Docker and Github-Action      
 
 Overview         
