@@ -1,4 +1,14 @@
 langchain
 pandas
 numpy
+sentence-transformers
+langchain
+flask
+pypdf
+python-dotenv
+chromadb
+langchain-chroma
+langchain_community
+langchain_openai
+langchain_experimental
 -e .
