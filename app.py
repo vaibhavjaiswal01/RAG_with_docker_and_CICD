@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain import PromptTemplate
 from langchain.chains import RetrievalQA
+from src.RAG_end_to_end.logger import logging
 from flask import Flask, render_template, jsonify, request
 from langchain_community.vectorstores import Chroma
 
@@ -38,5 +39,8 @@ def chat():
     return str(response["answer"])
 
 if __name__=='__main__':
+    logging.info("The app is running")
     app.run(host="0.0.0.0", port=8080, debug=True)
+
+
 
