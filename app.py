@@ -3,44 +3,36 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain import PromptTemplate
 from langchain.chains import RetrievalQA
-from src.RAG_end_to_end.logger import logging
-from flask import Flask, render_template, jsonify, request
+from flask import request, jsonify
 from langchain_community.vectorstores import Chroma
-
-from src.RAG_end_to_end.components.prompt import *
 from src.RAG_end_to_end.components import utils
+from src.RAG_end_to_end.components.prompt import prompt_template
 
-app = Flask(__name__)
-
+# Load environment variables
 load_dotenv()
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
 
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
-os.environ['OPENAI_API_KEY']=OPENAI_API_KEY
-
+# Setup Vector Store and Retriever
 vectorstores = utils.vectorstores
-retriever = vectorstores.as_retriever(search_kwarg={'k':1})
+retriever = vectorstores.as_retriever(search_kwargs={'k': 1})
 
+# Setup Prompt and Model
 prompt = PromptTemplate(template=prompt_template, input_variables=['context', 'question'])
+chat_model = ChatOpenAI(temperature=0, model_name='gpt-4o')
 
-chat_model = ChatOpenAI(temperature = 0, model_name = 'gpt-4o')
+# Setup Retrieval QA Chain
+qa = RetrievalQA.from_chain_type(llm=chat_model, 
+                                 chain_type='stuff', 
+                                 retriever=retriever, 
+                                 chain_type_kwargs={"prompt": prompt})
 
-qa = RetrievalQA.from_chain_type(llm = chat_model, 
-                                 chain_type = 'stuff', 
-                                 retriever = retriever, 
-                                 chain_type_kwargs = {"prompt":prompt})
-
-@app.route("/get", methods = ["GET", "Post"])
+# Chat function for Flask app
 def chat():
     msg = request.form["msg"]
-    input = msg
-    print(input)
-    response = qa.invoke({"input":msg})
+    print(f"User Input: {msg}")
+    
+    response = qa.invoke({"input": msg})
     print("Response: ", response["answer"])
+    
     return str(response["answer"])
-
-if __name__=='__main__':
-    logging.info("The app is running")
-    app.run(host="0.0.0.0", port=8080, debug=True)
-
-
-
